@@ -9,7 +9,7 @@ import (
 type PaymentsEventsDeserializer struct {
 }
 
-func NewPaymentsEventsDeserializer() *PaymentsEventsDeserializer {
+func NewPaymentsEventsDeserializerImpl() *PaymentsEventsDeserializer {
     return &PaymentsEventsDeserializer{}
 }
 

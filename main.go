@@ -6,7 +6,11 @@ import (
 
 func main() {
 
-    processor := NewMessageProcessor()
+    messageConsumer := NewRabbitMQMessageConsumer()
+    paymentsEventsDeserializer := NewPaymentsEventsDeserializerImpl()
+    paymentsEventsHandler := NewPaymentsEventsHandler()
+
+    processor := NewMessageProcessor(messageConsumer, paymentsEventsDeserializer, paymentsEventsHandler)
 
     err := processor.Start()
     if err != nil {
