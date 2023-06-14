@@ -28,9 +28,18 @@ MESSAGE_PROCESSOR_PID=$!
 
 print_message "Sending messages to rabbitmq"
 for i in {1..10} ; do
-    message="Message #$i"
-    echo "Publishing message $message"
-    docker-compose exec rabbitmq rabbitmqadmin publish routing_key="message-consumer-queue" payload="$message"
+    echo "Publishing WithdrawalCreated event with amount $i"
+    docker-compose exec rabbitmq rabbitmqadmin publish routing_key="message-consumer-queue" payload="
+      {
+    		\"type\": \"WithdrawalCreated\",
+    		\"data\": {
+    			\"withdrawal_id\": \"e728f3a7-b92f-46fe-b080-524442065cb3\",
+    			\"amount\": $i,
+    			\"source_account\": \"source account details\",
+    			\"destination_account\": \"destination account details\"
+    		}
+    	}
+    "
 done
 
 print_message "Terminating message processor"

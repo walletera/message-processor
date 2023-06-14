@@ -6,12 +6,16 @@ import (
 )
 
 type MessageProcessor struct {
-    messageConsumer *RabbitMQMessageConsumer
+    messageConsumer            *RabbitMQMessageConsumer
+    paymentsEventsDeserializer *PaymentsEventsDeserializer
+    paymentsEventsHandler      *PaymentsEventsHandler
 }
 
 func NewMessageProcessor() *MessageProcessor {
     return &MessageProcessor{
-        messageConsumer: NewRabbitMQMessageConsumer(),
+        messageConsumer:            NewRabbitMQMessageConsumer(),
+        paymentsEventsDeserializer: NewPaymentsEventsDeserializer(),
+        paymentsEventsHandler:      NewPaymentsEventsHandler(),
     }
 }
 
@@ -30,6 +34,17 @@ func (p *MessageProcessor) processMessages(ch <-chan Message) {
     }
 }
 
-func (p *MessageProcessor) processMessage(msg Message) {
-    log.Printf("processing message with payload %s", msg.Payload)
+func (p *MessageProcessor) processMessage(message Message) {
+    event, err := p.paymentsEventsDeserializer.Deserialize(message)
+    if err != nil {
+        p.pringErrorLog(message, err)
+    }
+    err = p.paymentsEventsHandler.HandleEvent(event)
+    if err != nil {
+        p.pringErrorLog(message, err)
+    }
+}
+
+func (p *MessageProcessor) pringErrorLog(message Message, err error) {
+    log.Printf("error processing message %s: %s", message.Payload, err.Error())
 }
