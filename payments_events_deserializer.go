@@ -9,15 +9,15 @@ import (
 type PaymentsEventsDeserializer struct {
 }
 
-func NewPaymentsEventsDeserializerImpl() *PaymentsEventsDeserializer {
+func NewPaymentsEventsDeserializer() *PaymentsEventsDeserializer {
     return &PaymentsEventsDeserializer{}
 }
 
-func (d *PaymentsEventsDeserializer) Deserialize(message Message) (any, error) {
+func (d *PaymentsEventsDeserializer) Deserialize(rawPayload []byte) (Event[PaymentsEventsVisitor], error) {
     var event EventEnvelope
-    err := json.Unmarshal(message.Payload, &event)
+    err := json.Unmarshal(rawPayload, &event)
     if err != nil {
-        return nil, fmt.Errorf("error deserializing message with payload %s: %w", message.Payload, err)
+        return nil, fmt.Errorf("error deserializing message with payload %s: %w", rawPayload, err)
     }
     switch event.Type {
     case "WithdrawalCreated":

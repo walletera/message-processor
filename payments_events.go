@@ -13,3 +13,7 @@ type WithdrawalCreated struct {
     SourceAccount      string  `json:"source_account"`
     DestinationAccount string  `json:"destination_account"`
 }
+
+func (w WithdrawalCreated) Accept(visitor PaymentsEventsVisitor) error {
+    return visitor.VisitWithdrawalCreated(w)
+}

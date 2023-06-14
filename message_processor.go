@@ -5,53 +5,54 @@ import (
     "log"
 )
 
-type MessageProcessor struct {
+type MessageProcessor[Visitor any] struct {
     messageConsumer    MessageConsumer
-    eventsDeserializer EventsDeserializer
-    eventsHandler      EventsHandler
+    eventsDeserializer EventsDeserializer[Visitor]
+    eventsVisitor      Visitor
 }
 
-func NewMessageProcessor(
+func NewMessageProcessor[Visitor any](
     messageConsumer MessageConsumer,
-    eventsDeserializer EventsDeserializer,
-    eventsHandler EventsHandler,
-) *MessageProcessor {
-    return &MessageProcessor{
+    eventsDeserializer EventsDeserializer[Visitor],
+    eventsVisitor Visitor,
+) *MessageProcessor[Visitor] {
+
+    return &MessageProcessor[Visitor]{
         messageConsumer:    messageConsumer,
         eventsDeserializer: eventsDeserializer,
-        eventsHandler:      eventsHandler,
+        eventsVisitor:      eventsVisitor,
     }
 }
 
-func (p *MessageProcessor) Start() error {
+func (p *MessageProcessor[Visitor]) Start() error {
     msgCh, err := p.messageConsumer.Consume()
     if err != nil {
         return fmt.Errorf("failed consuming from message consumer: %w", err)
     }
-    go p.processMessages(msgCh)
+    go p.processMsgs(msgCh)
     return nil
 }
 
-func (p *MessageProcessor) processMessages(ch <-chan Message) {
-    for message := range ch {
-        go p.processMessage(message)
+func (p *MessageProcessor[Visitor]) processMsgs(ch <-chan Message) {
+    for msg := range ch {
+        go p.processMsg(msg)
     }
 }
 
-func (p *MessageProcessor) processMessage(message Message) {
-    event, err := p.eventsDeserializer.Deserialize(message)
+func (p *MessageProcessor[Visitor]) processMsg(message Message) {
+    event, err := p.eventsDeserializer.Deserialize(message.Payload)
     if err != nil {
         p.printErrorLog(message, err)
         return
     }
     if event != nil {
-        err = p.eventsHandler.HandleEvent(event)
+        err = event.Accept(p.eventsVisitor)
         if err != nil {
             p.printErrorLog(message, err)
         }
     }
 }
 
-func (p *MessageProcessor) printErrorLog(message Message, err error) {
-    log.Printf("error processing message with payload: %s: %s", message.Payload, err.Error())
+func (p *MessageProcessor[V]) printErrorLog(msg Message, err error) {
+    log.Printf("error processing message with payload: %s: %s", msg.Payload, err.Error())
 }

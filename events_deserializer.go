@@ -1,5 +1,5 @@
 package main
 
-type EventsDeserializer interface {
-    Deserialize(message Message) (any, error)
+type EventsDeserializer[Visitor any] interface {
+    Deserialize(rawEvent []byte) (Event[Visitor], error)
 }

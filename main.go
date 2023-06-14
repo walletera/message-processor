@@ -7,10 +7,10 @@ import (
 func main() {
 
     messageConsumer := NewRabbitMQMessageConsumer()
-    paymentsEventsDeserializer := NewPaymentsEventsDeserializerImpl()
-    paymentsEventsHandler := NewPaymentsEventsHandler()
+    paymentsEventsDeserializer := NewPaymentsEventsDeserializer()
+    paymentsEventsHandler := NewPaymentsEventsVisitorImpl()
 
-    processor := NewMessageProcessor(messageConsumer, paymentsEventsDeserializer, paymentsEventsHandler)
+    processor := NewMessageProcessor[PaymentsEventsVisitor](messageConsumer, paymentsEventsDeserializer, paymentsEventsHandler)
 
     err := processor.Start()
     if err != nil {

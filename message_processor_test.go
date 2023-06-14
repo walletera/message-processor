@@ -13,9 +13,8 @@ func TestMessageProcessor_ProcessValidMessage(t *testing.T) {
     messageConsumerMock := &MockMessageConsumer{}
     messageConsumerMock.On("Consume").Return((<-chan Message)(messagesCh), nil)
 
-    message := Message{
-        Payload: []byte{},
-    }
+    rawPayload := []byte("raw message payload")
+    message := Message{Payload: rawPayload}
 
     event := WithdrawalCreated{
         WithdrawalId:       "19cf3c4c-4a0d-417e-b0cc-83385b9487de",
@@ -24,17 +23,17 @@ func TestMessageProcessor_ProcessValidMessage(t *testing.T) {
         DestinationAccount: "destination account details",
     }
 
-    eventsDeserializerMock := &MockEventsDeserializer{}
-    eventsDeserializerMock.On("Deserialize", message).Return(event, nil)
+    eventsDeserializerMock := &MockEventsDeserializer[PaymentsEventsVisitor]{}
+    eventsDeserializerMock.On("Deserialize", rawPayload).Return(event, nil)
 
     wg := sync.WaitGroup{}
     wg.Add(1)
-    eventsHandlerMock := &MockEventsHandler{}
-    eventsHandlerMock.On("HandleEvent", event).Return(nil).Run(func(args mock.Arguments) {
+    eventsHandlerMock := &MockPaymentsEventsVisitor{}
+    eventsHandlerMock.On("VisitWithdrawalCreated", event).Return(nil).Run(func(args mock.Arguments) {
         wg.Done()
     })
 
-    messageProcessor := NewMessageProcessor(messageConsumerMock, eventsDeserializerMock, eventsHandlerMock)
+    messageProcessor := NewMessageProcessor[PaymentsEventsVisitor](messageConsumerMock, eventsDeserializerMock, eventsHandlerMock)
 
     messageProcessorStartError := messageProcessor.Start()
     require.NoError(t, messageProcessorStartError)
