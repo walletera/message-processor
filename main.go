@@ -8,9 +8,9 @@ func main() {
 
     messageConsumer := NewRabbitMQMessageConsumer()
     paymentsEventsDeserializer := NewPaymentsEventsDeserializer()
-    paymentsEventsHandler := NewPaymentsEventsVisitorImpl()
+    paymentsEventsVisitor := NewPaymentsEventsVisitorImpl()
 
-    processor := NewMessageProcessor[PaymentsEventsVisitor](messageConsumer, paymentsEventsDeserializer, paymentsEventsHandler)
+    processor := NewMessageProcessor[PaymentsEventsVisitor](messageConsumer, paymentsEventsDeserializer, paymentsEventsVisitor)
 
     err := processor.Start()
     if err != nil {
