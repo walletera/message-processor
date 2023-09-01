@@ -1,3 +1,5 @@
+//go:build rabbitmq_client_test
+
 package main
 
 import (
