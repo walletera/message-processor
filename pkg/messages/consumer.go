@@ -1,6 +1,6 @@
-package main
+package messages
 
-type MessageConsumer interface {
+type Consumer interface {
     Consume() (<-chan Message, error)
     Close() error
 }

@@ -1,11 +1,12 @@
 //go:build rabbitmq_client_test
 
-package main
+package rabbitmq
 
 import (
     "context"
     "fmt"
     "github.com/stretchr/testify/assert"
+    "github.com/walletera/message-processor/pkg/messages"
     "math/rand"
     "os"
     "testing"
@@ -21,7 +22,7 @@ func TestRabbitMQClientWithDefaults(t *testing.T) {
     stopRabbitMQ := runRabbitMQ(ctx)
     defer stopRabbitMQ(ctx)
 
-    consumer, err := NewRabbitMQClient()
+    consumer, err := NewClient()
     if err != nil {
         t.Error(err.Error())
         return
@@ -37,7 +38,7 @@ func TestRabbitMQClientWithDefaults(t *testing.T) {
     randomNum := rand.New(rand.NewSource(time.Now().Unix())).Int63()
     message := fmt.Sprintf("a message with a random number %d", randomNum)
 
-    publisher, err := NewRabbitMQClient()
+    publisher, err := NewClient()
     if err != nil {
         t.Error(err.Error())
         return
@@ -61,14 +62,14 @@ func TestRabbitMQClientWithOptions(t *testing.T) {
 
     const testRoutingKey = "test.routing.key"
 
-    consumer, err := NewRabbitMQClient(
+    consumer, err := NewClient(
         WithQueueName("test-queue"),
         WithExchangeName("test-exchange"),
         WithExchangeType(ExchangeTypeTopic),
         WithConsumerRoutingKeys(testRoutingKey),
     )
     if err != nil {
-        t.Errorf("error creating RabbitMQClient: %s", err.Error())
+        t.Errorf("error creating Client: %s", err.Error())
         return
     }
     defer consumer.Close()
@@ -82,7 +83,7 @@ func TestRabbitMQClientWithOptions(t *testing.T) {
     randomNum := rand.New(rand.NewSource(time.Now().Unix())).Int63()
     message := fmt.Sprintf("a message with a random number %d", randomNum)
 
-    publisher, err := NewRabbitMQClient(
+    publisher, err := NewClient(
         WithQueueName("test-queue"),
         WithExchangeName("test-exchange"),
         WithExchangeType(ExchangeTypeTopic),
@@ -111,7 +112,7 @@ func TestRabbitMQClientWithOptionsButEmptyExchangeType(t *testing.T) {
 
     const testRoutingKey = "test.routing.key"
 
-    _, err := NewRabbitMQClient(
+    _, err := NewClient(
         WithQueueName("test-queue"),
         WithExchangeName("test-exchange"),
         WithConsumerRoutingKeys(testRoutingKey),
@@ -127,14 +128,14 @@ func TestRabbitMQClientWithLoad(t *testing.T) {
 
     const testRoutingKey = "test.routing.key"
 
-    consumer, err := NewRabbitMQClient(
+    consumer, err := NewClient(
         WithQueueName("test-queue"),
         WithExchangeName("test-exchange"),
         WithExchangeType(ExchangeTypeTopic),
         WithConsumerRoutingKeys(testRoutingKey),
     )
     if err != nil {
-        t.Errorf("error creating RabbitMQClient: %s", err.Error())
+        t.Errorf("error creating Client: %s", err.Error())
         return
     }
     defer consumer.Close()
@@ -148,7 +149,7 @@ func TestRabbitMQClientWithLoad(t *testing.T) {
     randomNum := rand.New(rand.NewSource(time.Now().Unix())).Int63()
     message := fmt.Sprintf("a message with a random number %d", randomNum)
 
-    publisher, err := NewRabbitMQClient(
+    publisher, err := NewClient(
         WithQueueName("test-queue"),
         WithExchangeName("test-exchange"),
         WithExchangeType("topic"),
@@ -200,7 +201,7 @@ func runRabbitMQ(ctx context.Context) func(ctx context.Context) {
     }
 }
 
-func waitForMessageWithTimeout(t *testing.T, message string, messagesCh <-chan Message, duration time.Duration) {
+func waitForMessageWithTimeout(t *testing.T, message string, messagesCh <-chan messages.Message, duration time.Duration) {
     timeout := time.After(duration)
     select {
     case receivedMessage, ok := <-messagesCh:
@@ -214,7 +215,7 @@ func waitForMessageWithTimeout(t *testing.T, message string, messagesCh <-chan M
     }
 }
 
-func waitForNMessagesWithTimeout(t *testing.T, n int, messagesCh <-chan Message, duration time.Duration) {
+func waitForNMessagesWithTimeout(t *testing.T, n int, messagesCh <-chan messages.Message, duration time.Duration) {
     timeout := time.After(duration)
     messagesCount := 0
     for {

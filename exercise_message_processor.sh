@@ -22,7 +22,7 @@ until rabbitmq_is_ready; do
 done
 
 print_message "Starting message processor"
-go build -o message_processor
+go build -o message_processor example/process_payments_events.go
 ./message_processor &> message_processor_output.txt &
 MESSAGE_PROCESSOR_PID=$!
 

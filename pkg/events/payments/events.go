@@ -1,4 +1,4 @@
-package main
+package payments
 
 import "encoding/json"
 
@@ -30,6 +30,6 @@ type WithdrawalCreated struct {
     Beneficiary WithdrawalBeneficiary `json:"beneficiary"`
 }
 
-func (w WithdrawalCreated) Accept(visitor PaymentsEventsVisitor) error {
+func (w WithdrawalCreated) Accept(visitor EventsVisitor) error {
     return visitor.VisitWithdrawalCreated(w)
 }

@@ -1,9 +1,10 @@
-package main
+package rabbitmq
 
 import (
     "context"
     "fmt"
     amqp "github.com/rabbitmq/amqp091-go"
+    "github.com/walletera/message-processor/pkg/messages"
 )
 
 const (
@@ -15,7 +16,7 @@ const (
     ExchangeTypeFanout = "fanout"
 )
 
-type RabbitMQClient struct {
+type Client struct {
     conn        *amqp.Connection
     connChannel *amqp.Channel
     queue       amqp.Queue
@@ -28,10 +29,10 @@ type RabbitMQClient struct {
     consumerRoutingKeys []string
 }
 
-type ConsumerOpt func(consumer *RabbitMQClient)
+type ConsumerOpt func(consumer *Client)
 
-func NewRabbitMQClient(opts ...ConsumerOpt) (*RabbitMQClient, error) {
-    consumer := &RabbitMQClient{}
+func NewClient(opts ...ConsumerOpt) (*Client, error) {
+    consumer := &Client{}
     err := applyOptionsOrDefault(consumer, opts)
     if err != nil {
         return nil, err
@@ -43,9 +44,9 @@ func NewRabbitMQClient(opts ...ConsumerOpt) (*RabbitMQClient, error) {
     return consumer, nil
 }
 
-func (r *RabbitMQClient) Consume() (<-chan Message, error) {
+func (r *Client) Consume() (<-chan messages.Message, error) {
     if r.connChannel == nil {
-        return nil, fmt.Errorf("RabbitMQClient was not properly initialized")
+        return nil, fmt.Errorf("Client was not properly initialized")
     }
 
     if !r.useDefaultExchange {
@@ -78,11 +79,11 @@ func (r *RabbitMQClient) Consume() (<-chan Message, error) {
         return nil, fmt.Errorf("failed to register a consumer: %w", err)
     }
 
-    messagesCh := make(chan Message)
+    messagesCh := make(chan messages.Message)
     go func() {
         defer close(messagesCh)
         for msg := range msgs {
-            messagesCh <- Message{
+            messagesCh <- messages.Message{
                 Payload: msg.Body,
             }
         }
@@ -91,7 +92,7 @@ func (r *RabbitMQClient) Consume() (<-chan Message, error) {
     return messagesCh, nil
 }
 
-func (r *RabbitMQClient) Publish(ctx context.Context, message []byte, routingKey string) error {
+func (r *Client) Publish(ctx context.Context, message []byte, routingKey string) error {
 
     err := r.connChannel.PublishWithContext(ctx,
         r.exchangeName, // exchange
@@ -109,7 +110,7 @@ func (r *RabbitMQClient) Publish(ctx context.Context, message []byte, routingKey
     return nil
 }
 
-func (r *RabbitMQClient) Close() error {
+func (r *Client) Close() error {
     err := r.connChannel.Close()
     if err != nil {
         return fmt.Errorf("failed to close rabbitmq connection channel: %w", err)
@@ -121,11 +122,11 @@ func (r *RabbitMQClient) Close() error {
     return nil
 }
 
-func (r *RabbitMQClient) QueueName() string {
+func (r *Client) QueueName() string {
     return r.queue.Name
 }
 
-func (r *RabbitMQClient) init() error {
+func (r *Client) init() error {
     conn, err := amqp.Dial(fmt.Sprintf("amqp://guest:guest@localhost:%d/", r.port))
     if err != nil {
         return fmt.Errorf("failed to connect to RabbitMQ: %w", err)
@@ -172,7 +173,7 @@ func (r *RabbitMQClient) init() error {
     return nil
 }
 
-func applyOptionsOrDefault(consumer *RabbitMQClient, opts []ConsumerOpt) error {
+func applyOptionsOrDefault(consumer *Client, opts []ConsumerOpt) error {
     consumer.port = DefaultPort
     consumer.useDefaultExchange = true
     for _, opt := range opts {
@@ -186,33 +187,33 @@ func applyOptionsOrDefault(consumer *RabbitMQClient, opts []ConsumerOpt) error {
     return nil
 }
 
-func WithPort(port uint) func(c *RabbitMQClient) {
-    return func(c *RabbitMQClient) {
+func WithPort(port uint) func(c *Client) {
+    return func(c *Client) {
         c.port = port
     }
 }
 
-func WithQueueName(queueName string) func(c *RabbitMQClient) {
-    return func(c *RabbitMQClient) {
+func WithQueueName(queueName string) func(c *Client) {
+    return func(c *Client) {
         c.queueName = queueName
     }
 }
 
-func WithExchangeName(exchangeName string) func(c *RabbitMQClient) {
-    return func(c *RabbitMQClient) {
+func WithExchangeName(exchangeName string) func(c *Client) {
+    return func(c *Client) {
         c.useDefaultExchange = false
         c.exchangeName = exchangeName
     }
 }
 
-func WithExchangeType(exchangeType string) func(c *RabbitMQClient) {
-    return func(c *RabbitMQClient) {
+func WithExchangeType(exchangeType string) func(c *Client) {
+    return func(c *Client) {
         c.exchangeType = exchangeType
     }
 }
 
-func WithConsumerRoutingKeys(routingKeys ...string) func(c *RabbitMQClient) {
-    return func(c *RabbitMQClient) {
+func WithConsumerRoutingKeys(routingKeys ...string) func(c *Client) {
+    return func(c *Client) {
         c.consumerRoutingKeys = routingKeys
     }
 }

@@ -1,19 +1,20 @@
-package main
+package payments
 
 import (
     "encoding/json"
     "fmt"
+    "github.com/walletera/message-processor/pkg/events"
     "log"
 )
 
-type PaymentsEventsDeserializer struct {
+type EventsDeserializer struct {
 }
 
-func NewPaymentsEventsDeserializer() *PaymentsEventsDeserializer {
-    return &PaymentsEventsDeserializer{}
+func NewEventsDeserializer() *EventsDeserializer {
+    return &EventsDeserializer{}
 }
 
-func (d *PaymentsEventsDeserializer) Deserialize(rawPayload []byte) (Event[PaymentsEventsVisitor], error) {
+func (d *EventsDeserializer) Deserialize(rawPayload []byte) (events.Event[EventsVisitor], error) {
     var event EventEnvelope
     err := json.Unmarshal(rawPayload, &event)
     if err != nil {
