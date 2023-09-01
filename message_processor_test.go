@@ -17,10 +17,9 @@ func TestMessageProcessor_ProcessValidMessage(t *testing.T) {
     message := Message{Payload: rawPayload}
 
     event := WithdrawalCreated{
-        WithdrawalId:       "19cf3c4c-4a0d-417e-b0cc-83385b9487de",
-        Amount:             100,
-        SourceAccount:      "source account details",
-        DestinationAccount: "destination account details",
+        Id:          "19cf3c4c-4a0d-417e-b0cc-83385b9487de",
+        Amount:      100,
+        Beneficiary: WithdrawalBeneficiary{},
     }
 
     eventsDeserializerMock := &MockEventsDeserializer[PaymentsEventsVisitor]{}

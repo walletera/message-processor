@@ -7,11 +7,27 @@ type EventEnvelope struct {
     Data json.RawMessage `json:"data"`
 }
 
+type BeneficiaryAccount struct {
+    Holder     string `json:"holder"`
+    Number     int    `json:"number"`
+    RoutingKey string `json:"routing_key"`
+}
+
+type WithdrawalBeneficiary struct {
+    Id          string             `json:"id"`
+    Description string             `json:"description"`
+    Account     BeneficiaryAccount `json:"account"`
+}
+
 type WithdrawalCreated struct {
-    WithdrawalId       string  `json:"withdrawal_id"`
-    Amount             float64 `json:"amount"`
-    SourceAccount      string  `json:"source_account"`
-    DestinationAccount string  `json:"destination_account"`
+    Id          string                `json:"id"`
+    UserId      string                `json:"user_id"`
+    PspId       string                `json:"psp_id"`
+    ExternalId  string                `json:"external_id"`
+    Amount      int                   `json:"amount"`
+    Currency    string                `json:"currency"`
+    Status      string                `json:"status"`
+    Beneficiary WithdrawalBeneficiary `json:"beneficiary"`
 }
 
 func (w WithdrawalCreated) Accept(visitor PaymentsEventsVisitor) error {
