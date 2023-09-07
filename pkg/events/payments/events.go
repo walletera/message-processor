@@ -24,7 +24,7 @@ type WithdrawalCreated struct {
     UserId      string                `json:"user_id"`
     PspId       string                `json:"psp_id"`
     ExternalId  string                `json:"external_id"`
-    Amount      int                   `json:"amount"`
+    Amount      float64               `json:"amount"`
     Currency    string                `json:"currency"`
     Status      string                `json:"status"`
     Beneficiary WithdrawalBeneficiary `json:"beneficiary"`
