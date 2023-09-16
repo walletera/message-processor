@@ -18,7 +18,7 @@ rabbitmq_is_ready() {
 
 until rabbitmq_is_ready; do
   sleep 1
-  echo "Waiting rabbitmq to start..."
+  print_message "Waiting rabbitmq to start..."
 done
 
 print_message "Starting message processor"
@@ -29,7 +29,7 @@ MESSAGE_PROCESSOR_PID=$!
 print_message "Sending messages to rabbitmq"
 for i in {1..10} ; do
     echo "Publishing WithdrawalCreated event with amount $i"
-    docker-compose exec rabbitmq rabbitmqadmin publish routing_key="message-consumer-queue" payload="
+    docker-compose exec rabbitmq rabbitmqadmin publish routing_key="message-processor-example-queue" payload="
       {
     		\"type\": \"WithdrawalCreated\",
     		\"data\": {
