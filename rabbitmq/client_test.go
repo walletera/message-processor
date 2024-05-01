@@ -5,12 +5,13 @@ package rabbitmq
 import (
     "context"
     "fmt"
-    "github.com/stretchr/testify/assert"
-    "github.com/walletera/message-processor/pkg/messages"
     "math/rand"
     "os"
     "testing"
     "time"
+
+    "github.com/stretchr/testify/assert"
+    "github.com/walletera/message-processor/messages"
 
     "github.com/testcontainers/testcontainers-go"
     "github.com/testcontainers/testcontainers-go/wait"
