@@ -1,8 +1,9 @@
 package main
 
 import (
-    "github.com/walletera/message-processor/pkg/events/payments"
     "log"
+
+    "github.com/walletera/message-processor/payments"
 )
 
 func main() {
@@ -30,7 +31,7 @@ func NewPaymentsEventsVisitorImpl() *PaymentsEventsVisitorImpl {
     return &PaymentsEventsVisitorImpl{}
 }
 
-func (p PaymentsEventsVisitorImpl) VisitWithdrawalCreated(withdrawalCreated payments.WithdrawalCreated) error {
-    log.Printf("handling WithdrawalCreated event: %+v", withdrawalCreated)
+func (p PaymentsEventsVisitorImpl) VisitWithdrawalCreated(withdrawalCreated payments.WithdrawalCreatedEvent) error {
+    log.Printf("handling WithdrawalCreatedEvent event: %+v", withdrawalCreated)
     return nil
 }

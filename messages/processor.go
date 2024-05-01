@@ -2,8 +2,9 @@ package messages
 
 import (
     "fmt"
-    "github.com/walletera/message-processor/pkg/events"
     "log"
+
+    "github.com/walletera/message-processor/events"
 )
 
 type Processor[Visitor any] struct {

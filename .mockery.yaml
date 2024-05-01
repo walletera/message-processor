@@ -1,0 +1,18 @@
+with-expecter: True
+inpackage: True
+dir: "{{.InterfaceDir}}"
+mockname: "Mock{{.InterfaceName}}"
+outpkg: "{{.PackageName}}"
+filename: "mock_{{.InterfaceNameSnake}}.go"
+all: True
+packages:
+  github.com/walletera/message-processor/events:
+    interfaces:
+      Handler:
+      Deserializer:
+  github.com/walletera/message-processor/messages/tests:
+    interfaces:
+      FakeEventVisitor:
+  github.com/walletera/message-processor/messages:
+      interfaces:
+        Consumer:

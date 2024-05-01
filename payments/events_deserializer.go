@@ -3,8 +3,9 @@ package payments
 import (
     "encoding/json"
     "fmt"
-    "github.com/walletera/message-processor/pkg/events"
     "log"
+
+    "github.com/walletera/message-processor/events"
 )
 
 type EventsDeserializer struct {
@@ -15,17 +16,17 @@ func NewEventsDeserializer() *EventsDeserializer {
 }
 
 func (d *EventsDeserializer) Deserialize(rawPayload []byte) (events.Event[EventsVisitor], error) {
-    var event EventEnvelope
+    var event events.EventEnvelope
     err := json.Unmarshal(rawPayload, &event)
     if err != nil {
         return nil, fmt.Errorf("error deserializing message with payload %s: %w", rawPayload, err)
     }
     switch event.Type {
     case "WithdrawalCreated":
-        var withdrawalCreated WithdrawalCreated
+        var withdrawalCreated WithdrawalCreatedEvent
         err := json.Unmarshal(event.Data, &withdrawalCreated)
         if err != nil {
-            log.Printf("error deserializing WithdrawalCreated event data %s: %s", event.Data, err.Error())
+            log.Printf("error deserializing WithdrawalCreatedEvent event data %s: %s", event.Data, err.Error())
         }
         return withdrawalCreated, nil
     default:

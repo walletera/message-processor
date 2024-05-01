@@ -2,8 +2,9 @@ package payments
 
 import (
     "fmt"
-    "github.com/walletera/message-processor/pkg/messages"
-    "github.com/walletera/message-processor/pkg/rabbitmq"
+
+    "github.com/walletera/message-processor/messages"
+    "github.com/walletera/message-processor/rabbitmq"
 )
 
 const (

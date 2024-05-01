@@ -3,8 +3,9 @@ package rabbitmq
 import (
     "context"
     "fmt"
+
     amqp "github.com/rabbitmq/amqp091-go"
-    "github.com/walletera/message-processor/pkg/messages"
+    "github.com/walletera/message-processor/messages"
 )
 
 const (
