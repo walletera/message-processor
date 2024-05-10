@@ -19,7 +19,7 @@ type WithdrawalCreatedEvent struct {
     Status      string                `json:"status"`
     Beneficiary WithdrawalBeneficiary `json:"beneficiary"`
 
-    data []byte
+    correlationID string
 }
 
 type WithdrawalBeneficiary struct {
@@ -44,6 +44,10 @@ func (w WithdrawalCreatedEvent) ID() string {
 
 func (w WithdrawalCreatedEvent) Type() string {
     return "WithdrawalCreated"
+}
+
+func (w WithdrawalCreatedEvent) CorrelationID() string {
+    return w.correlationID
 }
 
 func (w WithdrawalCreatedEvent) DataContentType() string {

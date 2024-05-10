@@ -13,6 +13,11 @@ func (f FakeEvent) Type() string {
     panic("implement me")
 }
 
+func (f FakeEvent) CorrelationID() string {
+    //TODO implement me
+    panic("implement me")
+}
+
 func (f FakeEvent) DataContentType() string {
     //TODO implement me
     panic("implement me")
