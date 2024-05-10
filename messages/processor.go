@@ -2,7 +2,6 @@ package messages
 
 import (
     "fmt"
-    "log"
 
     "github.com/walletera/message-processor/events"
 )
@@ -11,18 +10,32 @@ type Processor[Visitor any] struct {
     messageConsumer    Consumer
     eventsDeserializer events.Deserializer[Visitor]
     eventsVisitor      Visitor
+    errorHandler       func(ProcessorError)
 }
+
+type ProcessorError struct {
+    message Message
+    error   error
+}
+
+func (p ProcessorError) Error() string {
+    return fmt.Sprintf("error processing message with payload %s", p.message.Payload)
+}
+
+type ErrorHandler func(ProcessorError)
 
 func NewProcessor[Visitor any](
     messageConsumer Consumer,
     eventsDeserializer events.Deserializer[Visitor],
     eventsVisitor Visitor,
+    errorHandler ErrorHandler,
 ) *Processor[Visitor] {
 
     return &Processor[Visitor]{
         messageConsumer:    messageConsumer,
         eventsDeserializer: eventsDeserializer,
         eventsVisitor:      eventsVisitor,
+        errorHandler:       errorHandler,
     }
 }
 
@@ -44,17 +57,19 @@ func (p *Processor[Visitor]) processMsgs(ch <-chan Message) {
 func (p *Processor[Visitor]) processMsg(message Message) {
     event, err := p.eventsDeserializer.Deserialize(message.Payload)
     if err != nil {
-        p.printErrorLog(message, err)
+        p.errorHandler(ProcessorError{
+            message: message,
+            error:   err,
+        })
         return
     }
     if event != nil {
         err = event.Accept(p.eventsVisitor)
         if err != nil {
-            p.printErrorLog(message, err)
+            p.errorHandler(ProcessorError{
+                message: message,
+                error:   err,
+            })
         }
     }
-}
-
-func (p *Processor[V]) printErrorLog(msg Message, err error) {
-    log.Printf("error processing message with payload: %s: %s", msg.Payload, err.Error())
 }

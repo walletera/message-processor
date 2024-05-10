@@ -3,6 +3,7 @@ package main
 import (
     "log"
 
+    "github.com/walletera/message-processor/messages"
     "github.com/walletera/message-processor/payments"
 )
 
@@ -10,7 +11,13 @@ func main() {
 
     paymentsEventsVisitor := NewPaymentsEventsVisitorImpl()
 
-    processor, err := payments.NewRabbitMQProcessor(paymentsEventsVisitor, "message-processor-example-queue")
+    processor, err := payments.NewRabbitMQProcessor(
+        paymentsEventsVisitor,
+        "message-processor-example-queue",
+        func(err messages.ProcessorError) {
+            log.Fatalf(err.Error())
+        },
+    )
     if err != nil {
         log.Fatalf("error creating new RabbitMQProcessor: %s", err.Error())
     }

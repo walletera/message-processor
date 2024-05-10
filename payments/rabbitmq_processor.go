@@ -13,7 +13,12 @@ const (
     RabbitMQRoutingKey   = "payments.events"
 )
 
-func NewRabbitMQProcessor(eventsVisitor EventsVisitor, queueName string, rabbitmqOpts ...rabbitmq.ConsumerOpt) (*messages.Processor[EventsVisitor], error) {
+func NewRabbitMQProcessor(
+    eventsVisitor EventsVisitor,
+    queueName string,
+    errorHandler messages.ErrorHandler,
+    rabbitmqOpts ...rabbitmq.ConsumerOpt,
+) (*messages.Processor[EventsVisitor], error) {
     defaultOpts := []rabbitmq.ConsumerOpt{
         rabbitmq.WithExchangeName(RabbitMQExchangeName),
         rabbitmq.WithExchangeType(RabbitMQExchangeType),
@@ -25,5 +30,5 @@ func NewRabbitMQProcessor(eventsVisitor EventsVisitor, queueName string, rabbitm
     if err != nil {
         return nil, fmt.Errorf("creating rabbitmq client: %w", err)
     }
-    return NewProcessor(rabbitMQClient, eventsVisitor), nil
+    return NewProcessor(rabbitMQClient, eventsVisitor, errorHandler), nil
 }

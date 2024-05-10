@@ -6,8 +6,8 @@ import (
 
     "github.com/stretchr/testify/mock"
     "github.com/stretchr/testify/require"
-    "github.com/walletera/message-processor/pkg/events"
-    "github.com/walletera/message-processor/pkg/messages"
+    "github.com/walletera/message-processor/events"
+    "github.com/walletera/message-processor/messages"
 )
 
 func TestMessageProcessor_ProcessValidMessage(t *testing.T) {
@@ -31,7 +31,12 @@ func TestMessageProcessor_ProcessValidMessage(t *testing.T) {
         wg.Done()
     })
 
-    messageProcessor := messages.NewProcessor[FakeEventVisitor](messageConsumerMock, eventsDeserializerMock, mockFakeEventVisitor)
+    messageProcessor := messages.NewProcessor[FakeEventVisitor](
+        messageConsumerMock,
+        eventsDeserializerMock,
+        mockFakeEventVisitor,
+        func(processorError messages.ProcessorError) {},
+    )
 
     messageProcessorStartError := messageProcessor.Start()
     require.NoError(t, messageProcessorStartError)

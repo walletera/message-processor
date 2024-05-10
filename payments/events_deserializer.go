@@ -28,6 +28,7 @@ func (d *EventsDeserializer) Deserialize(rawPayload []byte) (events.Event[Events
         if err != nil {
             log.Printf("error deserializing WithdrawalCreatedEvent event data %s: %s", event.Data, err.Error())
         }
+        withdrawalCreated.correlationID = event.CorrelationID
         return withdrawalCreated, nil
     default:
         log.Printf("unexpected event type: %s", event.Type)
