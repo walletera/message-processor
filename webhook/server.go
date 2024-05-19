@@ -76,10 +76,3 @@ func (s *Server) logError(msg string, err error) {
     }
     s.logger.Error(msg, slog.String("error", err.Error()))
 }
-
-func (s *Server) logDebug(msg string) {
-    if s.logger == nil {
-        return
-    }
-    s.logger.Debug(msg)
-}
