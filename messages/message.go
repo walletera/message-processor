@@ -1,5 +1,9 @@
 package messages
 
+import "context"
+
 type Message struct {
-    Payload []byte
+    Ctx          context.Context
+    Payload      []byte
+    Acknowledger Acknowledger
 }
