@@ -1,8 +1,10 @@
 package main
 
 import (
+    "context"
     "log"
 
+    "github.com/walletera/message-processor/errors"
     "github.com/walletera/message-processor/messages"
     "github.com/walletera/message-processor/payments"
 )
@@ -14,8 +16,12 @@ func main() {
     processor, err := payments.NewRabbitMQProcessor(
         paymentsEventsVisitor,
         "message-processor-example-queue",
-        func(err messages.ProcessorError) {
-            log.Fatalf(err.Error())
+        payments.RabbitMQProcessorOpt{
+            ProcessorOpt: messages.WithErrorCallback(
+                func(processingError errors.ProcessingError) {
+                    log.Printf("error processing message: %s", processingError.Error())
+                },
+            ),
         },
     )
     if err != nil {
@@ -38,7 +44,7 @@ func NewPaymentsEventsVisitorImpl() *PaymentsEventsVisitorImpl {
     return &PaymentsEventsVisitorImpl{}
 }
 
-func (p PaymentsEventsVisitorImpl) VisitWithdrawalCreated(withdrawalCreated payments.WithdrawalCreatedEvent) error {
+func (p PaymentsEventsVisitorImpl) VisitWithdrawalCreated(_ context.Context, withdrawalCreated payments.WithdrawalCreatedEvent) errors.ProcessingError {
     log.Printf("handling WithdrawalCreatedEvent event: %+v", withdrawalCreated)
     return nil
 }

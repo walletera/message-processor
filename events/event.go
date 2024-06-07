@@ -1,5 +1,11 @@
 package events
 
+import (
+    "context"
+
+    "github.com/walletera/message-processor/errors"
+)
+
 type EventData interface {
     ID() string
     Type() string
@@ -11,5 +17,5 @@ type EventData interface {
 type Event[Visitor any] interface {
     EventData
 
-    Accept(visitor Visitor) error
+    Accept(ctx context.Context, visitor Visitor) errors.ProcessingError
 }

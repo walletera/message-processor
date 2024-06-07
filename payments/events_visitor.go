@@ -1,5 +1,11 @@
 package payments
 
+import (
+    "context"
+
+    "github.com/walletera/message-processor/errors"
+)
+
 type EventsVisitor interface {
-    VisitWithdrawalCreated(withdrawalCreated WithdrawalCreatedEvent) error
+    VisitWithdrawalCreated(ctx context.Context, withdrawalCreated WithdrawalCreatedEvent) errors.ProcessingError
 }

@@ -1,9 +1,11 @@
 package payments
 
 import (
+    "context"
     "encoding/json"
     "fmt"
 
+    "github.com/walletera/message-processor/errors"
     "github.com/walletera/message-processor/events"
 )
 
@@ -34,8 +36,8 @@ type BeneficiaryAccount struct {
     RoutingKey string `json:"routing_key"`
 }
 
-func (w WithdrawalCreatedEvent) Accept(visitor EventsVisitor) error {
-    return visitor.VisitWithdrawalCreated(w)
+func (w WithdrawalCreatedEvent) Accept(ctx context.Context, visitor EventsVisitor) errors.ProcessingError {
+    return visitor.VisitWithdrawalCreated(ctx, w)
 }
 
 func (w WithdrawalCreatedEvent) ID() string {

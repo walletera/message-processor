@@ -33,10 +33,14 @@ for i in {1..10} ; do
       {
     		\"type\": \"WithdrawalCreated\",
     		\"data\": {
-    			\"withdrawal_id\": \"e728f3a7-b92f-46fe-b080-524442065cb3\",
+    			\"id\": \"e728f3a7-b92f-46fe-b080-524442065cb3\",
+    			\"user_id\": \"a4fe943b-9e38-4741-84f5-5d3931db2d0e\",
+    			\"psp_id\": \"9f4a9742-8e59-4bb7-975f-c504f8ce4efd\",
     			\"amount\": $i,
-    			\"source_account\": \"source account details\",
-    			\"destination_account\": \"destination account details\"
+    			\"currency\": \"usd\",
+    			\"beneficiary\": {
+    			  \"id\": \"02ec607d-5016-456d-ae2d-a2f4d0354421\"
+    			}
     		}
     	}
     "
