@@ -12,6 +12,7 @@ import (
 
     "github.com/stretchr/testify/assert"
     "github.com/stretchr/testify/require"
+    "github.com/walletera/message-processor/errors"
     "github.com/walletera/message-processor/messages"
 )
 
@@ -78,19 +79,19 @@ func executeTest(t *testing.T, httpMethod string, requestBody []byte, expectedSt
         for msg := range msgCh {
             assert.NotNil(t, msg.Payload)
             var err error
-            switch string(msg.Payload) {
+            switch string(msg.Payload()) {
             case payloadSucceed:
-                err = msg.Acknowledger.Ack()
+                err = msg.Acknowledger().Ack()
             case payloadFailedWithUnprocessableMessage:
-                err = msg.Acknowledger.Nack(messages.NackOpts{
+                err = msg.Acknowledger().Nack(messages.NackOpts{
                     Requeue:      false,
-                    Code:         messages.UnprocessableMessage,
+                    ErrorCode:    errors.UnprocessableMessageErrorCode,
                     ErrorMessage: "",
                 })
             case payloadFailedWithInternalError:
-                err = msg.Acknowledger.Nack(messages.NackOpts{
+                err = msg.Acknowledger().Nack(messages.NackOpts{
                     Requeue:      false,
-                    Code:         messages.InternalError,
+                    ErrorCode:    errors.InternalErrorCode,
                     ErrorMessage: "",
                 })
             }
@@ -130,7 +131,7 @@ func TestShutdown(t *testing.T) {
         for msg := range msgCh {
             assert.NotNil(t, msg.Payload)
             time.Sleep(messageProcessingDelay)
-            err := msg.Acknowledger.Ack()
+            err := msg.Acknowledger().Ack()
             assert.NoError(t, err)
         }
         cancelCtx()

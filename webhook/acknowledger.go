@@ -3,6 +3,7 @@ package webhook
 import (
     "net/http"
 
+    "github.com/walletera/message-processor/errors"
     "github.com/walletera/message-processor/messages"
 )
 
@@ -26,8 +27,8 @@ func (a *Acknowledger) Ack() error {
 
 func (a *Acknowledger) Nack(opts messages.NackOpts) error {
     var status int
-    switch opts.Code {
-    case messages.UnprocessableMessage:
+    switch opts.ErrorCode {
+    case errors.UnprocessableMessageErrorCode:
         status = http.StatusBadRequest
     default:
         status = http.StatusInternalServerError
