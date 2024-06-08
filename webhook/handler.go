@@ -1,8 +1,6 @@
 package webhook
 
 import (
-    "context"
-    "errors"
     "io"
     "log/slog"
     "net/http"
@@ -40,23 +38,17 @@ func (h *handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
         writer.WriteHeader(http.StatusBadRequest)
         return
     }
-    ctx, cancel := context.WithTimeout(context.Background(), MessageProcessingTimeout)
-    defer cancel()
+    timeoutC := time.After(MessageProcessingTimeout + (1 * time.Second))
     acknowledger := NewAcknowledger(writer)
-    h.msgCh <- messages.Message{
-        Ctx:          ctx,
-        Payload:      rawBody,
-        Acknowledger: acknowledger,
-    }
+    h.msgCh <- messages.NewMessage(rawBody, acknowledger)
     select {
     case <-acknowledger.Done():
         return
-    case <-ctx.Done():
-        if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-            h.logError("timeout waiting for message to be processed", nil)
-            writer.WriteHeader(http.StatusInternalServerError)
-            return
-        }
+    case <-timeoutC:
+        // This is a safeguard measure, it should not happen. The processor should
+        // time out and cancel the operation before us.
+        h.logError("webhook server timeout waiting for message to be processed (should not had happened)", nil)
+        writer.WriteHeader(http.StatusInternalServerError)
         return
     }
 }
