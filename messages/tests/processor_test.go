@@ -15,7 +15,7 @@ import (
     messagesmock "github.com/walletera/message-processor/mocks/github.com/walletera/message-processor/messages"
 )
 
-func TestMessageProcessor_ProcessValidMessage(t *testing.T) {
+func TestMessageProcessor(t *testing.T) {
 
     var testErrs = map[string]errors.ProcessingError{
         "noErr":                     nil,
