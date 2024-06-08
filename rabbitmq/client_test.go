@@ -177,7 +177,7 @@ func TestRabbitMQClientWithLoad(t *testing.T) {
 
 func runRabbitMQ(ctx context.Context) func(ctx context.Context) {
     req := testcontainers.ContainerRequest{
-        Image: "rabbitmq:3.8.0-management",
+        Image: "rabbitmq:3.13.3-management",
         Name:  "rabbitmq",
         User:  "rabbitmq",
         ExposedPorts: []string{
@@ -210,7 +210,7 @@ func waitForMessageWithTimeout(t *testing.T, message string, messagesCh <-chan m
             t.Errorf("channel closed")
             return
         }
-        assert.Equal(t, message, string(receivedMessage.Payload))
+        assert.Equal(t, message, string(receivedMessage.Payload()))
     case <-timeout:
         t.Errorf("timeout waiting message")
     }

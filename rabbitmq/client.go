@@ -70,7 +70,7 @@ func (r *Client) Consume() (<-chan messages.Message, error) {
     msgs, err := r.connChannel.Consume(
         r.queue.Name, // queue
         "",           // consumer
-        true,         // auto-ack
+        false,        // auto-ack
         false,        // exclusive
         false,        // no-local
         false,        // no-wait
@@ -84,9 +84,7 @@ func (r *Client) Consume() (<-chan messages.Message, error) {
     go func() {
         defer close(messagesCh)
         for msg := range msgs {
-            messagesCh <- messages.Message{
-                Payload: msg.Body,
-            }
+            messagesCh <- messages.NewMessage(msg.Body, NewAcknowledger(msg))
         }
     }()
 
