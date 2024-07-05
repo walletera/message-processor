@@ -34,40 +34,52 @@ func NewProcessor[Visitor any](
     }
 }
 
-func (p *Processor[Visitor]) Start() error {
-    msgCh, err := p.messageConsumer.Consume()
+func (p *Processor[Visitor]) Start(ctx context.Context) error {
+    msgCh, err := p.startMessageConsumer(ctx)
     if err != nil {
-        return fmt.Errorf("failed consuming from message consumer: %w", err)
+        return err
     }
-    go p.processMsgs(msgCh)
+    go p.processMsgs(ctx, msgCh)
     return nil
 }
 
-func (p *Processor[Visitor]) processMsgs(ch <-chan Message) {
+func (p *Processor[Visitor]) startMessageConsumer(ctx context.Context) (<-chan Message, error) {
+    msgCh, err := p.messageConsumer.Consume()
+    if err != nil {
+        return nil, fmt.Errorf("failed consuming from message consumer: %w", err)
+    }
+    go func() {
+        <-ctx.Done()
+        err := p.messageConsumer.Close()
+        if err != nil {
+            p.opts.errorCallback(procerrors.NewInternalError("failed closing message consumer: " + err.Error()))
+        }
+    }()
+    return msgCh, nil
+}
+
+func (p *Processor[Visitor]) processMsgs(ctx context.Context, ch <-chan Message) {
     for msg := range ch {
-        go p.processMsgWithTimeout(msg)
+        go p.processMsgWithTimeout(ctx, msg)
     }
 }
 
-func (p *Processor[Visitor]) processMsgWithTimeout(msg Message) {
-    ctx, cancelCtx := context.WithTimeout(context.Background(), p.opts.processingTimeout)
+func (p *Processor[Visitor]) processMsgWithTimeout(ctx context.Context, msg Message) {
+    ctxWithTimeout, cancelCtx := context.WithTimeout(ctx, p.opts.processingTimeout)
     defer cancelCtx()
     processMsgDone := make(chan any)
     go func() {
-        p.processMsg(ctx, msg)
+        p.processMsg(ctxWithTimeout, msg)
         close(processMsgDone)
     }()
     select {
-    case <-ctx.Done():
+    case <-ctxWithTimeout.Done():
     case <-processMsgDone:
     }
-    err := ctx.Err()
+    err := ctxWithTimeout.Err()
     if err != nil {
         if errors.Is(err, context.DeadlineExceeded) {
             p.handleError(msg, procerrors.NewTimeoutError(err.Error()))
-        } else {
-            // this should not happen
-            p.handleError(msg, procerrors.NewInternalError(err.Error()))
         }
     }
 }

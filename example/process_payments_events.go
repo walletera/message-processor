@@ -28,7 +28,7 @@ func main() {
         log.Fatalf("error creating new RabbitMQProcessor: %s", err.Error())
     }
 
-    err = processor.Start()
+    err = processor.Start(context.Background())
     if err != nil {
         log.Fatalf("failed to start message processor: %s", err.Error())
     }

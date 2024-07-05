@@ -1,10 +1,12 @@
 package tests
 
 import (
+    "context"
     "fmt"
     "sync"
     "testing"
 
+    "github.com/stretchr/testify/assert"
     "github.com/stretchr/testify/mock"
     "github.com/stretchr/testify/require"
     "github.com/walletera/message-processor/errors"
@@ -51,8 +53,12 @@ func TestMessageProcessor(t *testing.T) {
 
 func execTest(t *testing.T, acknowledgerMockExpectationSetter func(acknowledgerMock *messagesmock.MockAcknowledger), processingErr errors.ProcessingError) {
     messagesCh := make(chan messages.Message)
+
     messageConsumerMock := &messagesmock.MockConsumer{}
     messageConsumerMock.On("Consume").Return((<-chan messages.Message)(messagesCh), nil)
+    messageConsumerMock.On("Close").Return(nil).Run(func(_ mock.Arguments) {
+        close(messagesCh)
+    })
 
     acknowledgerMock := &messagesmock.MockAcknowledger{}
     acknowledgerMockExpectationSetter(acknowledgerMock)
@@ -81,12 +87,19 @@ func execTest(t *testing.T, acknowledgerMockExpectationSetter func(acknowledgerM
         mockFakeEventVisitor,
     )
 
-    messageProcessorStartError := messageProcessor.Start()
+    ctx, cancel := context.WithCancel(context.Background())
+
+    messageProcessorStartError := messageProcessor.Start(ctx)
     require.NoError(t, messageProcessorStartError)
 
     messagesCh <- message
 
     wg.Wait()
+
+    cancel()
+
+    _, open := <-messagesCh
+    assert.False(t, open, "the messages channel is still open")
 
     acknowledgerMock.AssertExpectations(t)
     messageConsumerMock.AssertExpectations(t)

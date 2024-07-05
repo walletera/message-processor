@@ -82,10 +82,10 @@ func (r *Client) Consume() (<-chan messages.Message, error) {
 
     messagesCh := make(chan messages.Message)
     go func() {
-        defer close(messagesCh)
         for msg := range msgs {
             messagesCh <- messages.NewMessage(msg.Body, NewAcknowledger(msg))
         }
+        close(messagesCh)
     }()
 
     return messagesCh, nil
