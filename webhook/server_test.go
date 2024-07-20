@@ -68,9 +68,7 @@ func TestServer(t *testing.T) {
 }
 
 func executeTest(t *testing.T, httpMethod string, requestBody []byte, expectedStatusCode int) {
-    server := NewServer(8282, ServerOpts{
-        logger: slog.New(slog.NewTextHandler(os.Stdout, nil)),
-    })
+    server := NewServer(8282, WithLogger(slog.New(slog.NewTextHandler(os.Stdout, nil))))
     msgCh, err := server.Consume()
     require.NoError(t, err)
 
@@ -118,9 +116,7 @@ func executeTest(t *testing.T, httpMethod string, requestBody []byte, expectedSt
 }
 
 func TestShutdown(t *testing.T) {
-    server := NewServer(8282, ServerOpts{
-        logger: slog.New(slog.NewTextHandler(os.Stdout, nil)),
-    })
+    server := NewServer(8282, WithLogger(slog.New(slog.NewTextHandler(os.Stdout, nil))))
     msgCh, err := server.Consume()
     require.NoError(t, err)
 

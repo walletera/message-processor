@@ -13,8 +13,6 @@ import (
 )
 
 const (
-    DefaultPort = 8282
-
     shutdownTimeout = 10 * time.Second
 )
 
@@ -24,21 +22,15 @@ type Server struct {
     logger     *slog.Logger
 }
 
-type ServerOpts struct {
-    httpHandler http.Handler
-    logger      *slog.Logger
-}
-
-func NewServer(port int, opts ServerOpts) *Server {
+func NewServer(port int, opts ...Opt) *Server {
+    server := &Server{}
+    applyOptsOrDefault(server, opts)
     msgCh := make(chan messages.Message)
-    server := &Server{
-        httpServer: http.Server{
-            Addr:    fmt.Sprintf(":%d", port),
-            Handler: newHandler(msgCh, opts.logger),
-        },
-        msgCh:  msgCh,
-        logger: opts.logger,
+    server.httpServer = http.Server{
+        Addr:    fmt.Sprintf(":%d", port),
+        Handler: newHandler(msgCh, server.logger),
     }
+    server.msgCh = msgCh
     return server
 }
 
@@ -75,4 +67,11 @@ func (s *Server) logError(msg string, err error) {
         return
     }
     s.logger.Error(msg, slog.String("error", err.Error()))
+}
+
+func applyOptsOrDefault(server *Server, opts []Opt) {
+    server.logger = noopLogger
+    for _, opt := range opts {
+        opt(server)
+    }
 }
