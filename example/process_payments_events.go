@@ -11,10 +11,10 @@ import (
 
 func main() {
 
-    paymentsEventsVisitor := NewPaymentsEventsVisitorImpl()
+    paymentsEventsHandler := NewPaymentsEventsHandlerImpl()
 
     processor, err := payments.NewRabbitMQProcessor(
-        paymentsEventsVisitor,
+        paymentsEventsHandler,
         "message-processor-example-queue",
         payments.RabbitMQProcessorOpt{
             ProcessorOpt: messages.WithErrorCallback(
@@ -37,14 +37,14 @@ func main() {
     <-blockForeverCh
 }
 
-type PaymentsEventsVisitorImpl struct {
+type PaymentsEventsHandlerImpl struct {
 }
 
-func NewPaymentsEventsVisitorImpl() *PaymentsEventsVisitorImpl {
-    return &PaymentsEventsVisitorImpl{}
+func NewPaymentsEventsHandlerImpl() *PaymentsEventsHandlerImpl {
+    return &PaymentsEventsHandlerImpl{}
 }
 
-func (p PaymentsEventsVisitorImpl) VisitWithdrawalCreated(_ context.Context, withdrawalCreated payments.WithdrawalCreatedEvent) errors.ProcessingError {
+func (p PaymentsEventsHandlerImpl) HandleWithdrawalCreated(_ context.Context, withdrawalCreated payments.WithdrawalCreatedEvent) errors.ProcessingError {
     log.Printf("handling WithdrawalCreatedEvent event: %+v", withdrawalCreated)
     return nil
 }

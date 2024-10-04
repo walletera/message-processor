@@ -1,13 +1,13 @@
 package events
 
 import (
-	"context"
+    "context"
 
-	"github.com/walletera/message-processor/errors"
+    "github.com/walletera/message-processor/errors"
 )
 
-type Event[Visitor any] interface {
-	EventData
+type Event[Handler any] interface {
+    EventData
 
-	Accept(ctx context.Context, visitor Visitor) errors.ProcessingError
+    Accept(ctx context.Context, Handler Handler) errors.ProcessingError
 }

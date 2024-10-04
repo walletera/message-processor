@@ -9,7 +9,7 @@ packages:
       Deserializer:
   github.com/walletera/message-processor/fake:
     interfaces:
-      EventVisitor:
+      EventHandler:
   github.com/walletera/message-processor/messages:
       interfaces:
         Consumer:

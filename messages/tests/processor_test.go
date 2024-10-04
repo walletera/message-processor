@@ -68,20 +68,20 @@ func execTest(t *testing.T, acknowledgerMockExpectationSetter func(acknowledgerM
 
     event := fake.Event{}
 
-    eventsDeserializerMock := &eventsmock.MockDeserializer[fake.EventVisitor]{}
+    eventsDeserializerMock := &eventsmock.MockDeserializer[fake.EventHandler]{}
     eventsDeserializerMock.On("Deserialize", rawPayload).Return(event, nil)
 
     wg := sync.WaitGroup{}
     wg.Add(1)
-    mockFakeEventVisitor := &fakemock.MockEventVisitor{}
+    mockFakeEventVisitor := &fakemock.MockEventHandler{}
     mockFakeEventVisitor.
-        On("VisitFakeEvent", mock.Anything, event).
+        On("HandleFakeEvent", mock.Anything, event).
         Return(processingErr).
         Run(func(args mock.Arguments) {
             wg.Done()
         })
 
-    messageProcessor := messages.NewProcessor[fake.EventVisitor](
+    messageProcessor := messages.NewProcessor[fake.EventHandler](
         messageConsumerMock,
         eventsDeserializerMock,
         mockFakeEventVisitor,
